@@ -18,7 +18,7 @@ Gravity Station Data Reduction — 地球物理作業整理。
 
 - **水彩風格網頁**：[`index.html`](index.html)（單一檔案、無外部依賴）
 - **中英對照整理**：[`作業7.md`](作業7.md)
-- **原始題目**：[`作業7.png`](作業7.png)
+- **原始題目**：見 [GitHub 專案](https://github.com/oceanicdayi/2026_geophysics_Homework7)
 - **專案規則**：[`AGENTS.md`](AGENTS.md)
 
 ## 重點結果
