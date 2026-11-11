@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>重力測站資料約化 · 作業 7</title>
+<style>
+  :root {
+    --paper: #faf6ec;
+    --ink: #3b3a36;
+    --ink-soft: #6d685e;
+    --line: rgba(120, 110, 90, 0.14);
+    --peach: #f6c9b4;
+    --sky: #a8cbe0;
+    --mint: #b9d8bd;
+    --lilac: #cfc0e0;
+    --ochre: #ecd9a0;
+    --rose: #efc3c8;
+    --serif: "Noto Serif TC", "Source Han Serif TC", "Songti TC", "PMingLiU", Georgia, serif;
+    --sans: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, -apple-system, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.85;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* 紙張纖維紋理 */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    opacity: 0.055;
+    mix-blend-mode: multiply;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2"/></filter><rect width="180" height="180" filter="url(%23n)" opacity="0.5"/></svg>');
+  }
+
+  /* 水彩暈染背景 */
+  .bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(58px);
+    opacity: 0.62;
+    mix-blend-mode: multiply;
+    animation: drift 22s ease-in-out infinite;
+  }
+  .b1 { width: 560px; height: 560px; top: -180px; left: -160px;
+        background: radial-gradient(circle at 40% 40%, var(--peach), rgba(246,201,180,0) 70%); }
+  .b2 { width: 520px; height: 520px; top: -120px; right: -180px;
+        background: radial-gradient(circle at 50% 45%, var(--sky), rgba(168,203,224,0) 70%);
+        animation-delay: -6s; }
+  .b3 { width: 480px; height: 480px; top: 38%; left: -220px;
+        background: radial-gradient(circle at 50% 50%, var(--mint), rgba(185,216,189,0) 70%);
+        animation-delay: -12s; }
+  .b4 { width: 540px; height: 540px; top: 46%; right: -240px;
+        background: radial-gradient(circle at 50% 50%, var(--lilac), rgba(207,192,224,0) 70%);
+        animation-delay: -3s; }
+  .b5 { width: 500px; height: 500px; bottom: -220px; left: 8%;
+        background: radial-gradient(circle at 50% 50%, var(--ochre), rgba(236,217,160,0) 70%);
+        animation-delay: -9s; }
+  .b6 { width: 440px; height: 440px; bottom: -160px; right: 4%;
+        background: radial-gradient(circle at 50% 50%, var(--rose), rgba(239,195,200,0) 70%);
+        animation-delay: -15s; }
+
+  @keyframes drift {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50%      { transform: translate(14px, -20px) scale(1.05); }
+  }
+
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 80px 30px 100px;
+  }
+
+  /* ---------- Hero ---------- */
+  .hero { padding: 8px 0 4px; }
+  .eyebrow {
+    font-size: 0.78rem;
+    letter-spacing: 0.24em;
+    color: var(--ink-soft);
+    margin: 0 0 18px;
+    text-transform: uppercase;
+  }
+  h1 {
+    font-family: var(--serif);
+    font-size: clamp(2.1rem, 5.2vw, 3.4rem);
+    line-height: 1.3;
+    letter-spacing: 0.02em;
+    margin: 0 0 10px;
+    font-weight: 600;
+  }
+  .mark {
+    position: relative;
+    display: inline-block;
+    z-index: 0;
+  }
+  .mark::after {
+    content: "";
+    position: absolute;
+    left: -3%;
+    right: -3%;
+    bottom: 4%;
+    height: 44%;
+    z-index: -1;
+    background: linear-gradient(95deg, rgba(246,201,180,0.85), rgba(236,217,160,0.72) 60%, rgba(185,216,189,0.6));
+    border-radius: 45% 55% 50% 50% / 60% 45% 55% 40%;
+    filter: blur(1px);
+    transform: rotate(-1.2deg);
+  }
+  .hero .en {
+    font-family: var(--serif);
+    font-style: italic;
+    color: var(--ink-soft);
+    letter-spacing: 0.06em;
+    font-size: 1.02rem;
+    margin: 0 0 22px;
+  }
+  .lead {
+    font-size: 1.06rem;
+    color: #4d4942;
+    max-width: 44em;
+    margin: 0;
+  }
+
+  /* ---------- Section ---------- */
+  .section { margin-top: 68px; }
+  .kicker {
+    font-size: 0.75rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 0 0 4px;
+  }
+  h2 {
+    font-family: var(--serif);
+    font-size: clamp(1.45rem, 3vw, 1.95rem);
+    font-weight: 600;
+    margin: 0 0 18px;
+    letter-spacing: 0.01em;
+    display: inline-block;
+  }
+  h2::after {
+    content: "";
+    display: block;
+    height: 11px;
+    margin-top: 3px;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 10" preserveAspectRatio="none"><path d="M3 6 C 30 2, 55 9, 85 6 S 140 2, 172 6 S 196 5, 197 5" fill="none" stroke="%23a8cbe0" stroke-width="5" stroke-linecap="round" opacity="0.6"/><path d="M6 8 C 40 5, 72 10, 106 7 S 162 4, 194 7" fill="none" stroke="%23ecd9a0" stroke-width="4" stroke-linecap="round" opacity="0.55"/></svg>') no-repeat;
+    background-size: 100% 100%;
+  }
+  h3 {
+    font-family: var(--serif);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0 0 6px;
+  }
+  p { margin: 0 0 12px; }
+  .soft { color: var(--ink-soft); }
+
+  /* ---------- Card ---------- */
+  .card {
+    background: rgba(255, 253, 247, 0.72);
+    border: 1px solid var(--line);
+    border-radius: 22px 24px 20px 26px;
+    box-shadow: 0 14px 36px rgba(90, 80, 60, 0.07);
+    padding: 28px 30px;
+    backdrop-filter: blur(4px);
+  }
+  .card + .card { margin-top: 18px; }
+
+  /* ---------- 題目 ---------- */
+  .problem-en {
+    font-family: var(--serif);
+    font-size: 1rem;
+    line-height: 1.9;
+    margin: 0 0 6px;
+  }
+  .problem-zh { color: var(--ink-soft); font-size: 0.95rem; margin: 0 0 18px; }
+  .problem-en strong { color: #2f2d29; }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-top: 20px;
+  }
+  .stat {
+    padding: 18px 18px 16px;
+    border-radius: 16px 18px 15px 19px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.7), rgba(255,255,255,0.32));
+    border: 1px solid var(--line);
+  }
+  .stat .label {
+    font-size: 0.74rem;
+    letter-spacing: 0.12em;
+    color: var(--ink-soft);
+    margin-bottom: 4px;
+  }
+  .stat .value {
+    font-family: var(--serif);
+    font-size: 1.32rem;
+    line-height: 1.35;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat .unit { font-size: 0.85rem; color: var(--ink-soft); }
+  .stat.accent {
+    background: linear-gradient(150deg, rgba(246,201,180,0.6), rgba(236,217,160,0.32));
+    border-color: rgba(200, 150, 120, 0.25);
+  }
+
+  /* ---------- 觀念三卡 ---------- */
+  .concepts {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 22px;
+  }
+  .concept {
+    padding: 20px;
+    border-radius: 18px 20px 16px 22px;
+    border: 1px solid var(--line);
+    background: rgba(255, 253, 247, 0.6);
+  }
+  .concept .tag {
+    display: inline-block;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    padding: 2px 10px;
+    border-radius: 999px;
+    margin-bottom: 10px;
+  }
+  .concept:nth-child(1) .tag { background: rgba(168,203,224,0.35); }
+  .concept:nth-child(2) .tag { background: rgba(185,216,189,0.4); }
+  .concept:nth-child(3) .tag { background: rgba(236,217,160,0.5); }
+  .concept .big {
+    font-family: var(--serif);
+    font-size: 1.04rem;
+    margin-bottom: 6px;
+  }
+  .concept p { font-size: 0.9rem; color: var(--ink-soft); margin: 0; line-height: 1.75; }
+
+  /* ---------- 步驟 ---------- */
+  .steps { margin-top: 26px; display: flex; flex-direction: column; gap: 22px; }
+  .step {
+    display: grid;
+    grid-template-columns: 54px 1fr;
+    gap: 20px;
+    position: relative;
+  }
+  .step:not(:last-child)::before {
+    content: "";
+    position: absolute;
+    left: 24px;
+    top: 56px;
+    bottom: -22px;
+    border-left: 2px dashed rgba(120, 110, 90, 0.28);
+  }
+  .step .num {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-family: var(--serif);
+    font-size: 1.15rem;
+    color: #3a4750;
+    background: radial-gradient(circle at 35% 30%, #ffffff, rgba(168,203,224,0.9));
+    box-shadow: 0 8px 16px rgba(120, 160, 190, 0.24);
+  }
+  .step:nth-child(2) .num { background: radial-gradient(circle at 35% 30%, #ffffff, rgba(185,216,189,0.9)); box-shadow: 0 8px 16px rgba(120,170,130,0.24); }
+  .step:nth-child(3) .num { background: radial-gradient(circle at 35% 30%, #ffffff, rgba(236,217,160,0.95)); box-shadow: 0 8px 16px rgba(190,170,110,0.24); }
+  .step:nth-child(4) .num { background: radial-gradient(circle at 35% 30%, #ffffff, rgba(246,201,180,0.95)); box-shadow: 0 8px 16px rgba(200,150,120,0.24); }
+  .step:nth-child(5) .num { background: radial-gradient(circle at 35% 30%, #ffffff, rgba(207,192,224,0.95)); box-shadow: 0 8px 16px rgba(160,140,190,0.24); }
+  .step .body { padding-top: 2px; min-width: 0; }
+  .step .body p { font-size: 0.94rem; color: var(--ink-soft); margin: 0 0 10px; max-width: 46em; }
+
+  .formula {
+    font-family: var(--serif);
+    font-size: 0.98rem;
+    background: rgba(255, 255, 255, 0.55);
+    border: 1px dashed rgba(120, 110, 90, 0.28);
+    border-radius: 12px;
+    padding: 10px 16px;
+    overflow-x: auto;
+    max-width: 100%;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .formula i { color: #2f4a5c; }
+  .formula .res { color: #9a5b3f; font-weight: 600; }
+
+  /* ---------- 表格 ---------- */
+  .table-wrap {
+    margin-top: 18px;
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: rgba(255, 253, 247, 0.62);
+  }
+  table { border-collapse: collapse; width: 100%; font-size: 0.93rem; }
+  th, td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid rgba(120, 110, 90, 0.1);
+    vertical-align: top;
+  }
+  .n { white-space: nowrap; }
+  thead th {
+    background: rgba(168, 203, 224, 0.16);
+    font-weight: 600;
+    font-size: 0.86rem;
+    letter-spacing: 0.03em;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td.n, th.n { font-variant-numeric: tabular-nums; }
+  .hi td { background: rgba(246, 201, 180, 0.18); }
+  .hi td:first-child { font-weight: 600; }
+
+  /* ---------- 提示框 ---------- */
+  .callout {
+    border-left: 4px solid rgba(226, 160, 120, 0.75);
+    background: rgba(246, 201, 180, 0.2);
+    padding: 18px 22px;
+    border-radius: 4px 16px 16px 4px;
+    margin-top: 20px;
+    font-size: 0.95rem;
+  }
+  .callout strong { color: #8a4f33; }
+
+  .takeaway {
+    margin-top: 22px;
+    padding: 20px 24px;
+    border-radius: 18px;
+    background: rgba(255, 253, 247, 0.65);
+    border: 1px solid var(--line);
+  }
+  .takeaway ul { margin: 8px 0 0; padding-left: 1.2em; }
+  .takeaway li { margin-bottom: 6px; font-size: 0.95rem; }
+
+  /* ---------- 知識卡 ---------- */
+  .knowledge {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 16px;
+    margin-top: 22px;
+  }
+  .kcard {
+    padding: 20px 20px 18px;
+    border-radius: 18px 20px 16px 22px;
+    border: 1px solid var(--line);
+    background: rgba(255, 253, 247, 0.62);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+  .kcard:hover { transform: translateY(-3px); box-shadow: 0 12px 26px rgba(90, 80, 60, 0.09); }
+  .kcard .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-bottom: 12px;
+  }
+  .kcard:nth-child(8n+1) .dot { background: var(--sky); }
+  .kcard:nth-child(8n+2) .dot { background: var(--mint); }
+  .kcard:nth-child(8n+3) .dot { background: var(--ochre); }
+  .kcard:nth-child(8n+4) .dot { background: var(--peach); }
+  .kcard:nth-child(8n+5) .dot { background: var(--lilac); }
+  .kcard:nth-child(8n+6) .dot { background: var(--rose); }
+  .kcard:nth-child(8n+7) .dot { background: #b9c9b0; }
+  .kcard:nth-child(8n+8) .dot { background: #cbbfa2; }
+  .kcard h3 { font-size: 1rem; }
+  .kcard p { font-size: 0.88rem; color: var(--ink-soft); margin: 0; line-height: 1.72; }
+
+  /* ---------- 頁尾 ---------- */
+  .footer {
+    margin-top: 72px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    justify-content: space-between;
+  }
+
+  /* ---------- 響應式 ---------- */
+  @media (max-width: 860px) {
+    .page { padding: 56px 20px 76px; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .concepts { grid-template-columns: 1fr; }
+    .step { grid-template-columns: 44px 1fr; gap: 16px; }
+    .num { width: 42px; height: 42px; font-size: 1rem; }
+    .step:not(:last-child)::before { left: 20px; top: 48px; }
+    .card { padding: 22px 20px; }
+    .formula { font-size: 0.9rem; }
+  }
+  @media (max-width: 480px) {
+    .stats { grid-template-columns: 1fr; }
+    h1 { font-size: 2rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .blob { animation: none; }
+    html { scroll-behavior: auto; }
+  }
+
+  @media print {
+    .bg, body::before { display: none; }
+    body { background: #fff; }
+    .page { padding: 0; }
+    .card, .kcard, .concept, .stat { box-shadow: none; background: #fff; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg" aria-hidden="true">
+  <span class="blob b1"></span>
+  <span class="blob b2"></span>
+  <span class="blob b3"></span>
+  <span class="blob b4"></span>
+  <span class="blob b5"></span>
+  <span class="blob b6"></span>
+</div>
+
+<main class="page">
+
+  <header class="hero">
+    <p class="eyebrow">地球物理 · 作業 7 / Homework 7</p>
+    <h1>重力測站<span class="mark">資料約化</span></h1>
+    <p class="en">Gravity Station Data Reduction</p>
+    <p class="lead">
+      給你一個測站的緯度、經度、高程和觀測重力，怎麼一步步算出「自由空氣異常」和「布蓋異常」？
+      這頁把公式、流程和背後的觀念，整理成看得懂的樣子。
+    </p>
+  </header>
+
+  <!-- ============ 題目 ============ -->
+  <section class="section">
+    <p class="kicker">The Problem</p>
+    <h2>題目長這樣</h2>
+
+    <div class="card">
+      <p class="problem-en">
+        <strong>8-2</strong> Given the following data for a gravity station:
+      </p>
+      <p class="problem-zh">已知某重力測站的下列資料：</p>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="label">緯度 Latitude</div>
+          <div class="value">48.1195° N</div>
+        </div>
+        <div class="stat">
+          <div class="label">經度 Longitude</div>
+          <div class="value">12.1878° E</div>
+        </div>
+        <div class="stat">
+          <div class="label">高程 Elevation</div>
+          <div class="value">487.9 <span class="unit">m</span></div>
+        </div>
+        <div class="stat accent">
+          <div class="label">觀測重力 Observed gravity</div>
+          <div class="value">980,717.39 <span class="unit">mGal</span></div>
+        </div>
+      </div>
+
+      <div style="margin-top: 22px;">
+        <p class="problem-en"><strong>a)</strong> Calculate the:</p>
+        <p class="problem-zh">
+          i) theoretical gravity　ii) free air correction　iii) Bouguer correction　
+          iv) free air gravity anomaly　v) Bouguer gravity anomaly.
+          <br>計算：理論重力、自由空氣修正、布蓋修正、自由空氣重力異常、布蓋重力異常。
+        </p>
+        <p class="problem-en"><strong>b)</strong> Suppose that the gravity station in (a) had exactly the same latitude, longitude and observed gravity, but it was located on the surface of the ocean, over a water depth of 487.9 m. Recompute the free-air and Bouguer gravity anomalies.</p>
+        <p class="problem-zh" style="margin-bottom:0;">
+          假設同一個測站搬到海面上、下方水深 487.9 m，緯度、經度與觀測重力都不變，重新計算自由空氣與布蓋重力異常。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 觀念 ============ -->
+  <section class="section">
+    <p class="kicker">The Big Idea</p>
+    <h2>這題到底在忙什麼？</h2>
+    <p style="max-width: 46em;">
+      重力探勘的核心想法很簡單：地表量到的重力，是好幾個因素疊加的结果。
+      緯度、高度、腳下那層岩石的密度，都會讓重力儀的讀數偏一點。
+      把「已知、算得出來」的部分一項項扣掉，剩下的那一小塊，才是地下構造發出的訊號。
+    </p>
+
+    <div class="concepts">
+      <div class="concept">
+        <span class="tag">緯度</span>
+        <div class="big">理論重力 g<sub>th</sub></div>
+        <p>地球會自轉、兩極又比較扁，所以同樣在海平面，越高緯重力越大。先用公式算出「這個緯度應該是多少」。</p>
+      </div>
+      <div class="concept">
+        <span class="tag">高度</span>
+        <div class="big">自由空氣修正 FAC</div>
+        <p>測站比基準面高，離地心遠一點，重力就小一點。假設中間只有空氣，把這段高度效應補回來。</p>
+      </div>
+      <div class="concept">
+        <span class="tag">質量</span>
+        <div class="big">布蓋修正 BC</div>
+        <p>測站和基準面之間不是空氣，而是一層岩石（或水）。這層板子也在拉重力儀，所以要把它的效應扣掉。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 步驟 ============ -->
+  <section class="section">
+    <p class="kicker">Step by Step</p>
+    <h2>五個步驟，從觀測值到異常</h2>
+
+    <div class="steps">
+
+      <div class="step">
+        <div class="num">1</div>
+        <div class="body">
+          <h3>先算「應該是多少」：理論重力</h3>
+          <p>用 GRS80 正常重力公式，把緯度 φ = 48.1195° 代入。這一步只跟緯度有關，和測站高低、地下有什麼都無關。</p>
+          <div class="formula">
+            <i>g</i><sub>th</sub> = 978032.67715 × (1 + 0.00193185 sin²φ) / √(1 − 0.00669438 sin²φ)
+            ≈ <span class="res">980,901.7 mGal</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="num">2</div>
+        <div class="body">
+          <h3>把測站「放回」基準面：自由空氣修正</h3>
+          <p>測站比基準面高了 487.9 m。假設中間什麼都沒有，每上升 1 m，重力大約要補回 0.3086 mGal。</p>
+          <div class="formula">
+            FAC = 0.3086 × <i>h</i> = 0.3086 × 487.9 ≈ <span class="res">+150.5 mGal</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="num">3</div>
+        <div class="body">
+          <h3>扣掉腳下的岩板：布蓋修正</h3>
+          <p>測站和基準面之間其實是一層岩石。把它當成無限水平板，用 2πGρh 算它的吸引力。係數取決於密度 ρ。</p>
+          <div class="formula">
+            BC = 2πGρ<i>h</i> = 0.04193 ρ <i>h</i>　；　ρ = 2.67 g/cm³
+            → 0.04193 × 2.67 × 487.9 ≈ <span class="res">54.6 mGal</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="num">4</div>
+        <div class="body">
+          <h3>得到自由空氣異常</h3>
+          <p>觀測值和理論值比一比，再把高度效應補回去。這就是自由空氣異常（Faye anomaly）。</p>
+          <div class="formula">
+            Δ<i>g</i><sub>FA</sub> = <i>g</i><sub>obs</sub> − <i>g</i><sub>th</sub> + FAC
+            = 980,717.39 − 980,901.7 + 150.5 ≈ <span class="res">−33.8 mGal</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="num">5</div>
+        <div class="body">
+          <h3>得到布蓋異常</h3>
+          <p>再多扣掉岩板的影響，就是地質學家最常用的布蓋異常。負值不代表「沒有重力」，而是比理論值小——通常暗示地下密度偏低。</p>
+          <div class="formula">
+            Δ<i>g</i><sub>B</sub> = Δ<i>g</i><sub>FA</sub> − BC ≈ −33.8 − 54.6 ≈ <span class="res">−88.4 mGal</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ (b) ============ -->
+  <section class="section" id="part-b">
+    <p class="kicker">Part B</p>
+    <h2>同一個觀測值，搬到海上</h2>
+    <p style="max-width: 46em;">
+      現在把測站搬到海面：高程是 0，所以自由空氣修正不用做。
+      但腳下 487.9 m 不是岩石，是水。布蓋修正要換成海水密度 1.03 g/cm³，
+      而且水層在基準面下方，是「移除水層」的效應。
+    </p>
+
+    <div class="card">
+      <div class="formula" style="margin-bottom: 10px;">
+        BC<sub>w</sub> = 0.04193 × 1.03 × 487.9 ≈ 21.1 mGal
+      </div>
+      <div class="formula" style="margin-bottom: 10px;">
+        Δ<i>g</i><sub>FA</sub> = 980,717.39 − 980,901.7 + 0 ≈ <span class="res">−184.3 mGal</span>
+      </div>
+      <div class="formula">
+        Δ<i>g</i><sub>B</sub> = −184.3 − 21.1 ≈ <span class="res">−205.4 mGal</span>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>關鍵一句：</strong>
+      同樣是 980,717.39 mGal，在陸地上算出 −88 mGal，在海上卻變成 −205 mGal。
+      差別不在數學，而在「你腳下踩的是什麼」——修正的是介質，不是數字。
+    </div>
+  </section>
+
+  <!-- ============ 公式表 ============ -->
+  <section class="section">
+    <p class="kicker">Cheat Sheet</p>
+    <h2>公式速查</h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>項目</th><th>公式</th><th>備註</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>理論重力 g<sub>th</sub></td>
+            <td class="n">GRS80 正常重力公式</td>
+            <td>只是緯度的函數</td>
+          </tr>
+          <tr>
+            <td>自由空氣修正 FAC</td>
+            <td class="n">0.3086 × h</td>
+            <td>h 以 m 計，mGal</td>
+          </tr>
+          <tr>
+            <td>布蓋修正 BC</td>
+            <td class="n">0.04193 × ρ × h</td>
+            <td>ρ 以 g/cm³ 計；岩石 2.67、水 1.03</td>
+          </tr>
+          <tr>
+            <td>自由空氣異常 Δg<sub>FA</sub></td>
+            <td class="n">g<sub>obs</sub> − g<sub>th</sub> + FAC</td>
+            <td>也稱 Faye anomaly</td>
+          </tr>
+          <tr>
+            <td>布蓋異常 Δg<sub>B</sub></td>
+            <td class="n">g<sub>obs</sub> − g<sub>th</sub> + FAC − BC</td>
+            <td>已移除水平板效應</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="soft" style="font-size: 0.85rem; margin-top: 10px;">
+      單位小抄：1 Gal = 1 cm/s² = 10⁴ mGal；地表平均重力約 980,000 mGal。
+    </p>
+  </section>
+
+  <!-- ============ 答案 ============ -->
+  <section class="section" id="answers">
+    <p class="kicker">Reference Answers</p>
+    <h2>參考結果（供驗算）</h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>項目</th>
+            <th class="n">(a) 陸地 ρ = 2.67</th>
+            <th class="n">(b) 海面 ρ<sub>w</sub> = 1.03</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>理論重力 g<sub>th</sub> (mGal)</td>
+            <td class="n">980,901.7</td>
+            <td class="n">980,901.7</td>
+          </tr>
+          <tr>
+            <td>自由空氣修正 FAC (mGal)</td>
+            <td class="n">+150.5</td>
+            <td class="n">0</td>
+          </tr>
+          <tr>
+            <td>布蓋修正 BC (mGal)</td>
+            <td class="n">54.6</td>
+            <td class="n">21.1</td>
+          </tr>
+          <tr class="hi">
+            <td>自由空氣異常 (mGal)</td>
+            <td class="n">−33.8</td>
+            <td class="n">−184.3</td>
+          </tr>
+          <tr class="hi">
+            <td>布蓋異常 (mGal)</td>
+            <td class="n">−88.4</td>
+            <td class="n">−205.4</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="soft" style="font-size: 0.85rem; margin-top: 10px;">
+      數值會隨採用的正常重力公式、密度與常數略有差異；答題時請標明公式與假設。
+    </p>
+  </section>
+
+  <!-- ============ 知識 ============ -->
+  <section class="section" id="knowledge">
+    <p class="kicker">What You Need to Know</p>
+    <h2>需要哪些相關知識</h2>
+
+    <div class="knowledge">
+      <div class="kcard">
+        <div class="dot"></div>
+        <h3>重力基礎</h3>
+        <p>萬有引力、重力加速度 g、單位 Gal 與 mGal、重力位、geoid 與參考橢球。</p>
+      </div>
+      <div class="kcard">
+        <div class="dot"></div>
+        <h3>地球重力場</h3>
+        <p>自轉離心力與橢球扁率造成的緯度效應，以及 GRS80 / 1980 IGF 正常重力公式。</p>
+      </div>
+      <div class="kcard">
+        <div class="dot"></div>
+        <h3>測量與約化</h3>
+        <p>相對與絕對重力測量、儀器漂移修正、潮汐修正、基準站連結。</p>
+      </div>
+      <div class="kcard">
+        <div class="dot"></div>
+        <h3>高程修正</h3>
+        <p>自由空氣修正、布蓋板狀模型 2πGρh、地形修正，以及 complete Bouguer anomaly。</p>
+      </div>
+      <div class="kcard">
+        <div class="dot"></div>
+        <h3>異常解釋</h3>
+        <p>自由空氣與布蓋異常的差異、密度對比、區域場與殘餘場分離。</p>
+      </div>
+      <div class="kcard">
+        <div class="dot"></div>
+        <h3>海洋重力</h3>
+        <p>海面測站 FAC = 0、水層布蓋修正、海水密度，以及海底地形的影響。</p>
+      </div>
+      <div class="kcard">
+        <div class="dot"></div>
+        <h3>數學工具</h3>
+        <p>度轉弧度、sin²φ、單位換算，還有有效位數與誤差傳遞的概念。</p>
+      </div>
+      <div class="kcard">
+        <div class="dot"></div>
+        <h3>探勘整合</h3>
+        <p>重力法在石油、礦產、地下水與地熱探勘的應用，與震測、磁力的綜合解釋。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 帶走 ============ -->
+  <section class="section" id="takeaway">
+    <p class="kicker">Takeaway</p>
+    <h2>帶走三句話</h2>
+    <div class="takeaway">
+      <ul>
+        <li>重力異常 = 觀測值 − 理論值 + 該補的修正 − 該扣的修正。</li>
+        <li>每一個修正項都對應一個物理原因：緯度、高度、質量。</li>
+        <li>(b) 題提醒你：修正的是「介質」，不是「數字」。</li>
+      </ul>
+    </div>
+
+    <div class="footer">
+      <span>原始題目：作業 7.png</span>
+      <span>本頁為課程作業的學習整理，數值僅供驗算。</span>
+    </div>
+  </section>
+
+</main>
+
+</body>
+</html>

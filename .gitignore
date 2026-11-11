@@ -1,0 +1,11 @@
+# 機敏資料（絕對不可提交）
+.env
+.env.*
+
+# 暫存預覽檔
+_preview_*.png
+_crop_*.png
+
+# 作業系統
+Thumbs.db
+.DS_Store
