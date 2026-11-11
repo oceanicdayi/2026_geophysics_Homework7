@@ -29,6 +29,7 @@
 | `index.html` | 水彩風格成果網頁（主要交付物） | ✅ 可 |
 | `作業7.md` | 題目中英對照、說明、公式與知識整理 | ✅ 可 |
 | `作業7.png` | 原始題目圖片（內容來源） | ✅ 可（僅 GitHub） |
+| `ref/p1.png`、`ref/p2.png` | 手稿插圖（已內嵌於 `index.html`） | ✅ 可（僅 GitHub） |
 | `AGENTS.md` | 本說明與規則 | ✅ 可 |
 | `.env` | 部署憑證與目標位置 | ❌ **絕對不可** |
 | `.gitignore` | 排除機敏與暫存檔 | ✅ 可 |
@@ -131,11 +132,12 @@ pinned: false
 - 上傳指令（排除機敏檔）：
 
 ```bash
-hf upload <space_id> . --repo-type space --exclude ".env" --exclude ".git/**" --exclude "作業7.png"
+hf upload <space_id> . --repo-type space --exclude ".env" --exclude ".git/**" --exclude "作業7.png" --exclude "ref/**"
 ```
 
 - **二進位檔限制**：Hugging Face 對 binary 檔案改用 Xet 儲存，直接 commit 會被拒絕。
-  因此 `作業7.png` **只放在 GitHub**；Space 的 `README.md` 以連結導向 GitHub 專案，不放圖片檔。
+  因此 `作業7.png` 與 `ref/*.png` **只放在 GitHub**；`index.html` 已將手稿插圖以 base64 data URI 內嵌，
+  Space 不需要任何圖片檔也能完整顯示。
 - 上傳後到 Space 的 **Files** 分頁確認清單中沒有 `.env`。
 
 ### 3. 發布前檢查清單 / Pre-release Checklist
